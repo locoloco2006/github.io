@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Min Geonwoo's Portfolio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #008080;
+            --ui-bg: #C0C0C0;
+            --ui-border-light: #FFFFFF;
+            --ui-border-dark: #808080;
+            --ui-border-darker: #000000;
+            --active-title-bg: #000080;
+            --inactive-title-bg: #808080;
+            --text-light: #FFFFFF;
+            --text-dark: #000000;
+            --link-color: #0000FF;
+            --font-pixel: 'VT323', monospace;
+            --font-body: 'Noto Sans KR', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            font-family: var(--font-body);
+            color: var(--text-dark);
+            overflow: hidden;
+            user-select: none;
+            cursor: default;
+        }
+
+        .pixel-font {
+            font-family: var(--font-pixel);
+        }
+        
+        .win-border {
+            border-style: solid;
+            border-width: 2px;
+            border-top-color: var(--ui-border-light);
+            border-left-color: var(--ui-border-light);
+            border-bottom-color: var(--ui-border-dark);
+            border-right-color: var(--ui-border-dark);
+            box-shadow: 1px 1px 0 1px var(--ui-border-darker);
+        }
+
+        .win-border-inset {
+            border-style: solid;
+            border-width: 2px;
+            border-top-color: var(--ui-border-dark);
+            border-left-color: var(--ui-border-dark);
+            border-bottom-color: var(--ui-border-light);
+            border-right-color: var(--ui-border-light);
+            box-shadow: inset 1px 1px 0 1px var(--ui-border-darker);
+        }
+
+        .win-button {
+            background-color: var(--ui-bg);
+            border-style: solid;
+            border-width: 1px;
+            border-top-color: var(--ui-border-light);
+            border-left-color: var(--ui-border-light);
+            border-bottom-color: var(--ui-border-dark);
+            border-right-color: var(--ui-border-dark);
+            box-shadow: 1px 1px 0 0 var(--ui-border-darker);
+        }
+        .win-button:active {
+            border-top-color: var(--ui-border-dark);
+            border-left-color: var(--ui-border-dark);
+            border-bottom-color: var(--ui-border-light);
+            border-right-color: var(--ui-border-light);
+            box-shadow: none;
+            transform: translate(1px, 1px);
+        }
+
+        .window {
+            position: absolute;
+            background-color: var(--ui-bg);
+            min-width: 300px;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .window .title-bar {
+            background-color: var(--inactive-title-bg);
+            color: var(--text-light);
+            padding: 3px 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            cursor: move;
+        }
+        .window.active .title-bar {
+            background-color: var(--active-title-bg);
+        }
+
+        .title-bar-controls button {
+            width: 20px;
+            height: 20px;
+            font-family: var(--font-pixel);
+            font-weight: bold;
+            line-height: 1;
+            padding-bottom: 2px;
+        }
+
+        .window-body {
+            flex-grow: 1;
+            padding: 2px;
+            overflow: auto;
+            background-color: white;
+        }
+        
+        .window-body.bg-gray {
+            background-color: var(--ui-bg);
+        }
+
+        .desktop-icon {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 80px;
+            text-align: center;
+            padding: 8px;
+            cursor: pointer;
+        }
+        .desktop-icon:hover {
+            background-color: rgba(0, 0, 128, 0.3);
+        }
+        .desktop-icon .icon-label {
+            color: white;
+            margin-top: 4px;
+            font-size: 14px;
+            text-shadow: 1px 1px 2px black;
+        }
+
+        #taskbar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 32px;
+            background-color: var(--ui-bg);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            padding: 2px;
+        }
+
+        #start-button {
+            font-weight: bold;
+            padding: 2px 8px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        #taskbar-apps {
+            flex-grow: 1;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            margin-left: 4px;
+            overflow-x: auto;
+        }
+
+        .taskbar-item {
+            height: 26px;
+            padding: 0 10px;
+            min-width: 100px;
+            max-width: 150px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .taskbar-item.active {
+            border-top-color: var(--ui-border-dark);
+            border-left-color: var(--ui-border-dark);
+            border-bottom-color: var(--ui-border-light);
+            border-right-color: var(--ui-border-light);
+            box-shadow: none;
+            background-color: #dfdfdf;
+        }
+
+        #clock {
+            padding: 2px 8px;
+            height: 26px;
+            margin-left: auto;
+        }
+
+        #boot-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: black;
+            color: white;
+            z-index: 20000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 1s ease-in-out;
+        }
+        #boot-text {
+            font-family: var(--font-pixel);
+            font-size: 1.2rem;
+            white-space: pre;
+            line-height: 1.5;
+        }
+        
+        .scanline-overlay::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 4px, 3px 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        @keyframes sweat-drop {
+            0% { opacity: 0; transform: translateY(0); }
+            50% { opacity: 1; }
+            100% { opacity: 0; transform: translateY(15px); }
+        }
+        .sweat1 { animation: sweat-drop 1.5s linear infinite; }
+        .sweat2 { animation: sweat-drop 1.5s linear 0.5s infinite; }
+        .sweat3 { animation: sweat-drop 1.5s linear 1s infinite; }
+
+        @keyframes head-tilt {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-5deg); }
+            75% { transform: rotate(5deg); }
+        }
+        .head-tilt { animation: head-tilt 4s ease-in-out infinite; }
+
+        /* Mobile adjustments */
+        @media (max-width: 768px) {
+            .window {
+                width: 100% !important;
+                height: calc(100% - 32px) !important;
+                top: 0 !important;
+                left: 0 !important;
+                max-width: 100vw;
+                max-height: calc(100vh - 32px);
+            }
+            .desktop-icon {
+                width: 70px;
+                padding: 4px;
+            }
+            #desktop {
+                padding: 8px;
+                gap: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="boot-screen">
+        <div id="boot-text"></div>
+    </div>
+
+    <div id="desktop" class="w-full h-screen p-4 flex flex-col flex-wrap content-start gap-4">
+        <!-- Desktop Icons will be added here by JS -->
+    </div>
+
+    <div id="taskbar" class="win-border">
+        <button id="start-button" class="win-button">
+            <svg width="20" height="20" viewBox="0 0 256 256"><path fill="#000080" d="M240 188h-40v40h40ZM240 28h-40v40h40ZM104 188H24v-40h80Zm0-60H24v-40h80Zm0-60H24V28h80Zm136 60h-40v40h40Z"/><path fill="#000080" d="m184 28-60 60h60Z"/></svg>
+            <span class="pixel-font">Start</span>
+        </button>
+        <div class="win-border-inset h-full mx-1 flex-grow-0" style="width: 2px;"></div>
+        <div id="taskbar-apps"></div>
+        <div id="clock" class="win-border-inset text-sm px-2 flex items-center justify-center"></div>
+    </div>
+
+    <template id="window-template">
+        <div class="window win-border">
+            <div class="title-bar">
+                <div class="title-bar-text flex items-center gap-2">
+                    <img class="icon w-4 h-4" src="" alt="icon">
+                    <span class="title">Window</span>
+                </div>
+                <div class="title-bar-controls flex gap-1">
+                    <button class="win-button minimize-btn" aria-label="Minimize">_</button>
+                    <button class="win-button maximize-btn" aria-label="Maximize">[]</button>
+                    <button class="win-button close-btn" aria-label="Close">X</button>
+                </div>
+            </div>
+            <div class="window-body win-border-inset">
+                <!-- Content goes here -->
+            </div>
+        </div>
+    </template>
+
+<script>
+const desktop = document.getElementById('desktop');
+const taskbarApps = document.getElementById('taskbar-apps');
+const windowTemplate = document.getElementById('window-template');
+
+let zIndexCounter = 100;
+const openWindows = {};
+
+const icons = [
+    { id: 'about', name: '내 컴퓨터', icon: 'my-computer', action: openAboutWindow },
+    { id: 'portfolio', name: '내 프로젝트', icon: 'folder', action: openPortfolioWindow },
+    { id: 'interests', name: '엔터테인먼트', icon: 'joystick', action: openInterestsWindow },
+    { id: 'contact', name: '쪽지 보내기', icon: 'email', action: openContactWindow },
+];
+
+const iconSVGs = {
+    'my-computer': `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 4H20V14H4V4Z" fill="#C0C0C0" stroke="#000000" stroke-width="1"/><path d="M5 5H19V13H5V5Z" fill="#FFFFFF"/><path d="M16 6H8V7H16V6Z" fill="#000080"/><path d="M16 8H8V9H16V8Z" fill="#000080"/><path d="M16 10H8V11H16V10Z" fill="#000080"/><path d="M7 15H17V20H7V15Z" fill="#C0C0C0" stroke="#000000" stroke-width="1"/><path d="M9 16H15V17H9V16Z" fill="#808080"/><path d="M9 18H15V19H9V18Z" fill="#808080"/></svg>`,
+    'folder': `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 4H9L11 6H22V20H2V4Z" fill="#FFD700" stroke="#000000" stroke-width="1"/><path d="M3 8H21V19H3V8Z" fill="#FFD700"/></svg>`,
+    'joystick': `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 18H18V21H6V18Z" fill="#C0C0C0" stroke="#000000" stroke-width="1"/><path d="M9 12H15V18H9V12Z" fill="#808080" stroke="#000000" stroke-width="1"/><path d="M12 3C13.1046 3 14 3.89543 14 5C14 6.10457 13.1046 7 12 7C10.8954 7 10 6.10457 10 5C10 3.89543 10.8954 3 12 3Z" fill="#FF0000" stroke="#000000" stroke-width="1"/><path d="M12 7V12" stroke="#000000" stroke-width="1"/></svg>`,
+    'email': `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 6H22V18H2V6Z" fill="#FFFFFF" stroke="#000000" stroke-width="1"/><path d="M2 6L12 13L22 6" stroke="#000000" stroke-width="1"/><path d="M3 7H21" fill="#C0C0C0"/><path d="M3 8H21" fill="#C0C0C0"/><path d="M3 9H21" fill="#C0C0C0"/></svg>`,
+    'file': `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 2H14L20 8V22H4V2Z" fill="white" stroke="black" stroke-width="1"/><path d="M13 2V9H20" stroke="black" stroke-width="1"/></svg>`,
+    'globe': `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" fill="#ADD8E6" stroke="black" stroke-width="1"/><path d="M12 2C14.5 5 15 8 14 12C13 16 10 19 8 22" stroke="#32CD32" stroke-width="1" fill="none"/><path d="M2 12C5 14.5 8 15 12 14C16 13 19 10 22 8" stroke="#32CD32" stroke-width="1" fill="none"/></svg>`,
+    'pyramid': `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L2 22H22L12 2Z" fill="#F0E68C" stroke="black" stroke-width="1"/><path d="M12 2V22" stroke="black" stroke-width="1"/></svg>`,
+    'chip': `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="18" height="18" fill="#555" stroke="black" stroke-width="1"/><rect x="6" y="6" width="12" height="12" fill="#C0C0C0"/><path d="M3 8H0M3 16H0M21 8H24M21 16H24M8 3V0M16 3V0M8 21V24M16 21V24" stroke="black" stroke-width="1"/></svg>`,
+    'apple-doc': `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 2H14L20 8V22H4V2Z" fill="white" stroke="black" stroke-width="1"/><path d="M13 2V9H20" stroke="black" stroke-width="1"/><path d="M12 12C13.5 11.5 14.5 12.5 15 14C14.5 15.5 13 16 12 16C11 16 9.5 15.5 9 14C9.5 12.5 10.5 11.5 12 12Z" fill="black"/><path d="M13 11C13.5 10 13 9 12.5 9C12 9 11.5 10 12 11" fill="black"/></svg>`,
+    'music': `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 18V6L18 3V15L9 18Z" fill="#C0C0C0" stroke="black" stroke-width="1"/><circle cx="7" cy="18" r="2" fill="black"/><circle cx="16" cy="15" r="2" fill="black"/></svg>`,
+    'movie': `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="4" width="20" height="16" fill="#333" stroke="black" stroke-width="1"/><rect x="4" y="6" width="2" height="2" fill="white"/><rect x="4" y="10" width="2" height="2" fill="white"/><rect x="4" y="14" width="2" height="2" fill="white"/><rect x="18" y="6" width="2" height="2" fill="white"/><rect x="18" y="10" width="2" height="2" fill="white"/><rect x="18" y="14" width="2" height="2" fill="white"/><rect x="7" y="7" width="10" height="10" fill="white"/></svg>`,
+    'art': `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="20" height="16" fill="#8B4513" stroke="black" stroke-width="1"/><rect x="4" y="4" width="16" height="12" fill="white"/><path d="M4 4L12 16H20L10 4H4Z" fill="#FF69B4"/><path d="M12 10C14 8 16 10 16 12C16 14 14 16 12 16C10 16 8 14 8 12C8 10 10 8 12 10Z" fill="#8A2BE2"/><path d="M10 18V22H14V18" stroke="black" stroke-width="1"/></svg>`,
+    'game': `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 10H2V14H6V10Z" fill="#333" stroke="black" stroke-width="1"/><path d="M4 8V16" stroke="black" stroke-width="1"/><path d="M18 10H22V14H18V10Z" fill="#333" stroke="black" stroke-width="1"/><path d="M20 8V16" stroke="black" stroke-width="1"/><path d="M7 6C7 4.34315 8.34315 3 10 3H14C15.6569 3 17 4.34315 17 6V18C17 19.6569 15.6569 21 14 21H10C8.34315 21 7 19.6569 7 18V6Z" fill="#C0C0C0" stroke="black" stroke-width="1"/></svg>`,
+    'lifestyle': `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 2H14L20 8V22H4V2Z" fill="white" stroke="black" stroke-width="1"/><path d="M13 2V9H20" stroke="black" stroke-width="1"/><path d="M6 12H18M6 15H18M6 18H12" stroke="#808080" stroke-width="1"/></svg>`,
+};
+
+function initDesktop() {
+    icons.forEach(iconData => {
+        const iconEl = document.createElement('div');
+        iconEl.className = 'desktop-icon';
+        iconEl.innerHTML = `
+            ${iconSVGs[iconData.icon]}
+            <span class="icon-label">${iconData.name}</span>
+        `;
+        iconEl.addEventListener('dblclick', () => iconData.action());
+        desktop.appendChild(iconEl);
+    });
+}
+
+function createWindow(id, title, content, options = {}) {
+    if (openWindows[id]) {
+        focusWindow(openWindows[id].element);
+        return;
+    }
+
+    const { width = 640, height = 480, x = (window.innerWidth - width) / 2, y = (window.innerHeight - height - 32) / 3, icon = 'file', bg = 'white' } = options;
+
+    const windowEl = windowTemplate.content.cloneNode(true).firstElementChild;
+    windowEl.id = `window-${id}`;
+    windowEl.style.width = `${width}px`;
+    windowEl.style.height = `${height}px`;
+    windowEl.style.left = `${x}px`;
+    windowEl.style.top = `${y}px`;
+    windowEl.style.zIndex = zIndexCounter++;
+
+    windowEl.querySelector('.title').textContent = title;
+    windowEl.querySelector('.icon').innerHTML = iconSVGs[icon];
+    const windowBody = windowEl.querySelector('.window-body');
+    windowBody.innerHTML = content;
+    if (bg === 'gray') {
+        windowBody.classList.remove('bg-white');
+        windowBody.classList.add('bg-gray');
+    }
+
+    desktop.appendChild(windowEl);
+
+    const taskbarItem = document.createElement('button');
+    taskbarItem.className = 'taskbar-item win-button';
+    taskbarItem.dataset.windowId = id;
+    taskbarItem.innerHTML = `<span class="w-4 h-4">${iconSVGs[icon]}</span><span class="truncate">${title}</span>`;
+    taskbarApps.appendChild(taskbarItem);
+
+    openWindows[id] = { element: windowEl, taskbarItem, minimized: false, maximized: false, prevRect: null };
+
+    // Event Listeners
+    windowEl.addEventListener('mousedown', () => focusWindow(windowEl));
+    taskbarItem.addEventListener('click', () => {
+        if (windowEl.classList.contains('active') && !openWindows[id].minimized) {
+            minimizeWindow(id);
+        } else {
+            if (openWindows[id].minimized) restoreWindow(id);
+            focusWindow(windowEl);
+        }
+    });
+    windowEl.querySelector('.close-btn').addEventListener('click', () => closeWindow(id));
+    windowEl.querySelector('.minimize-btn').addEventListener('click', () => minimizeWindow(id));
+    windowEl.querySelector('.maximize-btn').addEventListener('click', () => maximizeWindow(id));
+    
+    makeDraggable(windowEl);
+    focusWindow(windowEl);
+}
+
+function focusWindow(windowEl) {
+    if (!windowEl) return;
+    const id = windowEl.id.replace('window-', '');
+    
+    Object.values(openWindows).forEach(win => {
+        win.element.classList.remove('active');
+        win.taskbarItem.classList.remove('active');
+    });
+
+    windowEl.classList.add('active');
+    windowEl.style.zIndex = zIndexCounter++;
+    if (openWindows[id]) {
+        openWindows[id].taskbarItem.classList.add('active');
+    }
+}
+
+function closeWindow(id) {
+    if (!openWindows[id]) return;
+    openWindows[id].element.remove();
+    openWindows[id].taskbarItem.remove();
+    delete openWindows[id];
+}
+
+function minimizeWindow(id) {
+    if (!openWindows[id]) return;
+    openWindows[id].element.style.display = 'none';
+    openWindows[id].minimized = true;
+    openWindows[id].element.classList.remove('active');
+    openWindows[id].taskbarItem.classList.remove('active');
+}
+
+function restoreWindow(id) {
+    if (!openWindows[id]) return;
+    openWindows[id].element.style.display = 'flex';
+    openWindows[id].minimized = false;
+    focusWindow(openWindows[id].element);
+}
+
+function maximizeWindow(id) {
+    if (!openWindows[id]) return;
+    const win = openWindows[id];
+    const winEl = win.element;
+    if (win.maximized) {
+        winEl.style.width = `${win.prevRect.width}px`;
+        winEl.style.height = `${win.prevRect.height}px`;
+        winEl.style.top = `${win.prevRect.top}px`;
+        winEl.style.left = `${win.prevRect.left}px`;
+        win.maximized = false;
+    } else {
+        win.prevRect = winEl.getBoundingClientRect();
+        winEl.style.width = '100%';
+        winEl.style.height = `calc(100% - 32px)`;
+        winEl.style.top = '0';
+        winEl.style.left = '0';
+        win.maximized = true;
+    }
+}
+
+function makeDraggable(elmnt) {
+    let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+    const header = elmnt.querySelector(".title-bar");
+    if (header) {
+        header.onmousedown = dragMouseDown;
+    }
+
+    function dragMouseDown(e) {
+        e = e || window.event;
+        e.preventDefault();
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        document.onmouseup = closeDragElement;
+        document.onmousemove = elementDrag;
+    }
+
+    function elementDrag(e) {
+        e = e || window.event;
+        e.preventDefault();
+        pos1 = pos3 - e.clientX;
+        pos2 = pos4 - e.clientY;
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        
+        const newTop = elmnt.offsetTop - pos2;
+        const newLeft = elmnt.offsetLeft - pos1;
+
+        // Constrain to viewport
+        const taskbarHeight = 32;
+        const maxTop = window.innerHeight - taskbarHeight - elmnt.offsetHeight;
+        const maxLeft = window.innerWidth - elmnt.offsetWidth;
+
+        elmnt.style.top = Math.max(0, Math.min(newTop, maxTop)) + "px";
+        elmnt.style.left = Math.max(0, Math.min(newLeft, maxLeft)) + "px";
+    }
+
+    function closeDragElement() {
+        document.onmouseup = null;
+        document.onmousemove = null;
+    }
+}
+
+// --- Window Content Functions ---
+
+function openAboutWindow() {
+    const content = `
+        <div class="p-4 bg-gray text-sm space-y-4">
+            <p>"안녕하세요! 저는 민건우입니다. 이 웹사이트는 저에 관해 간단히 서술한 포트폴리오에요. 제 포트폴리오에서 즐거운 시간 보내세요!"</p>
+            <div class="win-border-inset p-2 bg-white">
+                <h2 class="font-bold">커리어 목표</h2>
+                <p>Palantir처럼 데이터 기반 인사이트를 제공하고 집단을 효율적으로 운용하도록 돕는 AI 서비스를 만들어 창업하고, 이를 통해 한국의 '주권적 AI' 달성에 기여하고 싶습니다. 방산, 산업, 소규모 집단 운영 효율화에 기여하는 것이 목표입니다.</p>
+            </div>
+            <div class="win-border p-1">
+                <h2 class="font-bold text-center bg-gray-300 p-1">My Traits (Fallout Style)</h2>
+                <div class="flex flex-col md:flex-row gap-4 p-2 bg-white">
+                    <div class="flex-1">
+                        <h3 class="font-bold text-green-600">노력의 천재</h3>
+                        <p class="text-xs mt-1">"제가 노력할 수 있는 능력만큼은 타고났다고 자부할 수 있어요. 제가 모자란 부분이 있더라도 노력으로 극복해내요."</p>
+                        <div class="w-32 h-32 mx-auto mt-2 relative">
+                            <svg viewBox="0 0 100 100" class="w-full h-full">
+                                <!-- Vault Boy-like character coding -->
+                                <circle cx="50" cy="35" r="15" fill="#F0E68C"/>
+                                <rect x="35" y="50" width="30" height="30" fill="#000080"/>
+                                <rect x="30" y="70" width="40" height="5" fill="#8B4513"/>
+                                <rect x="25" y="75" width="50" height="10" fill="#C0C0C0"/>
+                                <!-- Sweat drops -->
+                                <circle cx="60" cy="25" r="2" fill="#00FFFF" class="sweat1"/>
+                                <circle cx="63" cy="28" r="2" fill="#00FFFF" class="sweat2"/>
+                                <circle cx="58" cy="30" r="2" fill="#00FFFF" class="sweat3"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="font-bold text-green-600">다양한 부분에 관심이 많음</h3>
+                        <p class="text-xs mt-1">"국제정치부터 코딩, AI와 뇌과학 그리고 예술과 문학까지 정말 다양한 분야에 관심이 있어요."</p>
+                        <div class="w-32 h-32 mx-auto mt-2 relative">
+                            <svg viewBox="0 0 100 100" class="w-full h-full">
+                                <!-- Vault Boy-like character looking around -->
+                                <g class="head-tilt" style="transform-origin: 50px 50px;">
+                                    <circle cx="50" cy="35" r="15" fill="#F0E68C"/>
+                                    <circle cx="45" cy="35" r="2" fill="black"/>
+                                    <circle cx="55" cy="35" r="2" fill="black"/>
+                                </g>
+                                <rect x="35" y="50" width="30" height="30" fill="#000080"/>
+                                <!-- Interest icons -->
+                                <text x="10" y="40" font-size="12">📚</text>
+                                <text x="80" y="40" font-size="12">💻</text>
+                                <text x="10" y="80" font-size="12">🧠</text>
+                                <text x="80" y="80" font-size="12">🎨</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    createWindow('about', '내 컴퓨터 - 속성', content, { icon: 'my-computer', bg: 'gray' });
+}
+
+function openPortfolioWindow() {
+    const projects = [
+        { id: 'himun', name: 'HIMUN', icon: 'globe' },
+        { id: 'amun', name: 'AMUN', icon: 'pyramid' },
+        { id: 'aieyes', name: 'AIEYES', icon: 'chip' },
+        { id: 'postech', name: 'POSTECH Challenge', icon: 'apple-doc' },
+    ];
+    const content = `
+        <div class="p-4 bg-gray grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
+            ${projects.map(p => `
+                <div class="desktop-icon" ondblclick="openProjectDetail('${p.id}')">
+                    ${iconSVGs[p.icon]}
+                    <span class="icon-label !text-black !text-shadow-none">${p.name}</span>
+                </div>
+            `).join('')}
+        </div>
+    `;
+    createWindow('portfolio', '내 프로젝트', content, { icon: 'folder', bg: 'gray' });
+}
+
+function openProjectDetail(projectId) {
+    const projectData = {
+        himun: {
+            title: '한국외대 모의국제연합 HIMUN',
+            content: `
+                <h3 class="font-bold text-lg">의제/국가 보고서 작성 및 대표단 피드백</h3>
+                <p class="mt-2">HIMUN 활동을 통해 국제 관계에 대한 깊이 있는 이해를 바탕으로 의제 보고서를 작성했습니다. 또한, 참가 대표단의 보고서를 검토하고 건설적인 피드백을 제공하며 논리적 사고와 커뮤니케이션 능력을 함양했습니다.</p>
+                <img src="https://images.unsplash.com/photo-1543286386-713bdd548da4?q=80&w=800" class="w-full my-4 win-border-inset relative scanline-overlay" alt="Report writing">
+            `
+        },
+        amun: {
+            title: '한국외대 아시아언어문화대학 AMUN',
+            content: `
+                <h3 class="font-bold text-lg">이집트 대표단 아랍어 통역 및 리서치</h3>
+                <p class="mt-2">아랍어 전공 지식을 활용하여 이집트 대표단 통역을 담당했습니다. 소수민족 현황에 대한 심도 있는 조사를 수행하고, 이를 바탕으로 설득력 있는 대본을 작성하여 외교적 역량을 발휘했습니다.</p>
+                <img src="https://images.unsplash.com/photo-1569023722923-384399433f30?q=80&w=800" class="w-full my-4 win-border-inset relative scanline-overlay" alt="Egypt pyramid">
+            `
+        },
+        aieyes: {
+            title: '과 내부 학회 활동 AIEYES',
+            content: `
+                <h3 class="font-bold text-lg">전공 심화 학습 및 AI 이론 확장</h3>
+                <p class="mt-2">AIEYES 학회 활동을 통해 AI 및 머신러닝의 핵심 이론을 깊이 있게 학습하고, 다양한 프로젝트를 진행하며 코딩 실력을 향상시켰습니다. 동료들과의 협업을 통해 문제 해결 능력을 길렀습니다.</p>
+                <img src="https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?q=80&w=800" class="w-full my-4 win-border-inset relative scanline-overlay" alt="AI coding">
+            `
+        },
+        postech: {
+            title: 'POSTECH Apple Developer Academy 포트폴리오 챌린지 2기',
+            content: `
+                <h3 class="font-bold text-lg">포트폴리오 작성법 학습 및 네트워킹</h3>
+                <p class="mt-2">Apple Developer Academy 챌린지를 통해 개발자로서의 강점을 효과적으로 드러내는 포트폴리오 작성법을 배웠습니다. 이 과정을 통해 자신에 대한 이해를 높이고, 멘토 및 동료 참가자들과 교류하며 귀중한 인사이트를 얻었습니다.</p>
+                <img src="https://images.unsplash.com/photo-1521185496955-15097b20c5fe?q=80&w=800" class="w-full my-4 win-border-inset relative scanline-overlay" alt="Apple products">
+            `
+        }
+    };
+    const data = projectData[projectId];
+    const content = `<div class="p-4 text-sm space-y-2">${data.content}</div>`;
+    createWindow(`project-${projectId}`, data.title, content, { icon: 'file', width: 500, height: 400 });
+}
+window.openProjectDetail = openProjectDetail; // Make it accessible from inline onclick
+
+function openInterestsWindow() {
+    const interests = [
+        { id: 'music', name: '음악', icon: 'music' },
+        { id: 'movie', name: '영화', icon: 'movie' },
+        { id: 'art', name: '미술', icon: 'art' },
+        { id: 'game', name: '게임', icon: 'game' },
+        { id: 'lifestyle', name: '라이프스타일', icon: 'lifestyle' },
+    ];
+    const content = `
+        <div class="p-4 bg-gray grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
+            ${interests.map(i => `
+                <div class="desktop-icon" ondblclick="openInterestDetail('${i.id}')">
+                    ${iconSVGs[i.icon]}
+                    <span class="icon-label !text-black !text-shadow-none">${i.name}</span>
+                </div>
+            `).join('')}
+        </div>
+    `;
+    createWindow('interests', '엔터테인먼트', content, { icon: 'joystick', bg: 'gray' });
+}
+
+function openInterestDetail(interestId) {
+    const interestData = {
+        music: {
+            title: 'Winamp',
+            content: `<div class="p-2 bg-black text-green-400 pixel-font h-full flex flex-col">
+                <div class="win-border-inset p-1 text-center">MIN GEONWOO'S PLAYLIST</div>
+                <div class="flex-grow mt-2 win-border-inset p-2 text-sm">
+                    <p>1. Jazz - Miles Davis</p>
+                    <p>2. Rock - Led Zeppelin</p>
+                    <p>3. HipHop - A Tribe Called Quest</p>
+                    <p>4. Electronic - Daft Punk</p>
+                </div>
+                <div class="mt-2 text-center text-xs">음악은 워커홀릭 라이프의 필수품</div>
+            </div>`,
+            options: { icon: 'music', width: 300, height: 250, bg: 'gray' }
+        },
+        movie: {
+            title: 'Media Player',
+            content: `<div class="p-2 bg-black h-full flex flex-col items-center justify-center">
+                <p class="text-white pixel-font mb-2">Favorite Directors</p>
+                <div class="win-border-inset w-full h-48 bg-gray-800 relative scanline-overlay">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Shining_Poster.jpg/800px-Shining_Poster.jpg" class="w-full h-full object-contain" alt="The Shining Poster">
+                </div>
+                <p class="text-white pixel-font mt-2 text-xs">Stanley Kubrick, Francis Coppola</p>
+            </div>`,
+            options: { icon: 'movie', width: 350, height: 350, bg: 'gray' }
+        },
+        art: {
+            title: 'Image Viewer',
+            content: `<div class="p-2 bg-gray h-full flex flex-col items-center justify-center">
+                <p class="mb-2">KIAF, Frieze에서 영감을.</p>
+                <div class="win-border-inset w-full h-48 bg-white relative">
+                    <img src="https://uploads.vw-art.net/2020/07/George-Condo-The-Stockbroker%E2%80%99s-Wife-2007-2008-oil-on-linen-203.2-x-177.8-cm-Private-Collection-%C2%A9-George-Condo-2020-Courtesy-the-artist-and-Hauser-Wirth.jpg" class="w-full h-full object-contain" alt="George Condo painting">
+                </div>
+                <p class="mt-2 text-xs">George Condo, Salvador Dalí, Fauvism</p>
+            </div>`,
+            options: { icon: 'art', width: 350, height: 350, bg: 'gray' }
+        },
+        game: {
+            title: 'Games',
+            content: `<div class="p-4 bg-gray h-full">
+                <p class="font-bold">선호하는 게임:</p>
+                <ul class="list-disc list-inside mt-2">
+                    <li>Fallout Series (오픈월드)</li>
+                    <li>Spelunky Series (인디)</li>
+                </ul>
+                <p class="mt-4 text-xs">광활한 세계를 탐험하거나, 정교한 도전을 극복하는 것을 즐깁니다.</p>
+            </div>`,
+            options: { icon: 'game', width: 300, height: 250, bg: 'gray' }
+        },
+        lifestyle: {
+            title: 'Lifestyle.txt',
+            content: `<div class="p-2 font-mono text-sm whitespace-pre-wrap h-full">
+WORKAHOLIC:
+음악을 들으며 작업에 몰두하는 것을 좋아합니다.
+
+DRINKING (PAST):
+과거에는 주당이었으나 (소주 4병), 현재는 건강을 위해 금주 노력 중입니다.
+칵테일은 AMF를 선호합니다.
+
+DESIGN TASTE:
+복고풍 디자인을 사랑합니다.
+- Win98 UI
+- 1950년대 미국 가전
+- 아르데코, 브루탈리즘 건축
+            </div>`,
+            options: { icon: 'lifestyle', width: 400, height: 300 }
+        }
+    };
+    const data = interestData[interestId];
+    createWindow(`interest-${interestId}`, data.title, data.content, data.options);
+}
+window.openInterestDetail = openInterestDetail;
+
+function openContactWindow() {
+    const content = `
+        <div class="p-2 bg-gray h-full flex flex-col text-sm">
+            <div class="win-border p-1 flex items-center gap-2">
+                <button class="win-button px-2">보내기</button>
+                <div class="win-border-inset h-full" style="width: 1px;"></div>
+                <p>받는 사람:</p>
+                <div class="win-border-inset flex-grow p-1 bg-white">Min Geonwoo &lt;202503660@hufs.ac.kr&gt;</div>
+            </div>
+            <div class="mt-2 flex items-center gap-2">
+                <p class="w-16 text-right">이름:</p>
+                <input type="text" class="win-border-inset flex-grow p-1">
+            </div>
+            <div class="mt-1 flex items-center gap-2">
+                <p class="w-16 text-right">제목:</p>
+                <input type="text" class="win-border-inset flex-grow p-1">
+            </div>
+            <textarea class="win-border-inset flex-grow mt-2 p-1 resize-none"></textarea>
+            <div class="mt-2 p-2 win-border">
+                <h3 class="font-bold">다른 방법으로 연락하기</h3>
+                <div class="flex gap-4 mt-2">
+                    <a href="#" target="_blank" class="text-center hover:underline"><img src="https://static.licdn.com/sc/h/al2o9zrvru7skd8hehw3q3465" class="w-8 h-8 mx-auto">LinkedIn</a>
+                    <a href="#" target="_blank" class="text-center hover:underline"><img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" class="w-8 h-8 mx-auto bg-white rounded-full">GitHub</a>
+                    <button class="text-center hover:underline" onclick="alert('Calendly 페이지로 이동합니다.')"><img src="https://static.vecteezy.com/system/resources/previews/009/342/539/original/3d-coffee-cup-icon-free-png.png" class="w-8 h-8 mx-auto">커피챗</button>
+                </div>
+            </div>
+        </div>
+    `;
+    createWindow('contact', '새 메시지 작성', content, { icon: 'email', bg: 'gray', width: 500, height: 550 });
+}
+
+// --- Boot & Clock ---
+function updateClock() {
+    const now = new Date();
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    document.getElementById('clock').textContent = `${hours}:${minutes}`;
+}
+
+function bootSequence() {
+    const bootScreen = document.getElementById('boot-screen');
+    const bootTextEl = document.getElementById('boot-text');
+    const bootSteps = [
+        "System Booting...",
+        "Loading Kernel...",
+        "Initializing Hardware...",
+        "Starting MIN OS 98...",
+        "Welcome."
+    ];
+    let step = 0;
+
+    const interval = setInterval(() => {
+        if (step < bootSteps.length) {
+            bootTextEl.textContent += `\n${bootSteps[step]}`;
+            step++;
+        } else {
+            clearInterval(interval);
+            setTimeout(() => {
+                bootScreen.style.opacity = '0';
+                bootScreen.style.pointerEvents = 'none';
+                openWelcomeWindow();
+            }, 1000);
+        }
+    }, 500);
+}
+
+function openWelcomeWindow() {
+    const content = `
+        <div class="p-4 text-sm space-y-4">
+            <h2 class="text-lg font-bold">민건우의 포트폴리오 OS에 오신 것을 환영합니다!</h2>
+            <p>이곳은 1990년대 후반의 감성으로 제작된 저의 개인 포트폴리오입니다.</p>
+            <p>바탕화면의 아이콘을 더블 클릭하여 저의 프로젝트, 관심사, 연락처 정보를 확인해보세요.</p>
+            <div class="flex justify-end mt-4">
+                <button class="win-button px-4" onclick="closeWindow('welcome')">확인</button>
+            </div>
+        </div>
+    `;
+    createWindow('welcome', '환영합니다!', content, { icon: 'my-computer', width: 400, height: 250, bg: 'gray' });
+}
+
+
+// --- Initialization ---
+document.addEventListener('DOMContentLoaded', () => {
+    initDesktop();
+    updateClock();
+    setInterval(updateClock, 1000);
+    bootSequence();
+});
+
+</script>
+</body>
+</html>
